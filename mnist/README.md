@@ -1,2 +1,3 @@
-##三种方式实现mnist手写识别
-成功率分别为87% 91% 97%
+<h1>Three ways to implement mnist</h1>
+<br>
+<h3>Learning accuracy is: 81% 91% 97%</h3>
