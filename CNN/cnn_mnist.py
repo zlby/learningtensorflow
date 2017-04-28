@@ -21,7 +21,7 @@ def bias_variable(shape):
     pass
 
 
-def conv2d(x, W):
+def conv2d(x, W):t
     pass
 
 
