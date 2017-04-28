@@ -88,4 +88,4 @@ with tf.Session() as sess:
             #     test_images.append(mnist.test.images[randno])
             #     test_lables.append(mnist.test.labels[randno])
             # print(compute_accuracy(test_images, test_lables))
-            print(compute_accuracy(mnist.test.images.next_batch(100), mnist.test.labels.next_batch(100)))
+            print(compute_accuracy(mnist.test.images, mnist.test.labels)
