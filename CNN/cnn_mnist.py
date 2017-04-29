@@ -66,7 +66,6 @@ b_fc2 = bias_variable([10])
 prediction = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
 
-
 cross_entropy = tf.reduce_mean(-tf.reduce_sum(ys *
                                               tf.log(prediction), reduction_indices=[1]))
 train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
@@ -88,4 +87,4 @@ with tf.Session() as sess:
             #     test_images.append(mnist.test.images[randno])
             #     test_lables.append(mnist.test.labels[randno])
             # print(compute_accuracy(test_images, test_lables))
-            print(compute_accuracy(mnist.test.images, mnist.test.labels)
+            print(compute_accuracy(mnist.test.images[:1000], mnist.test.labels[:1000]))
