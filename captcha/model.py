@@ -1,5 +1,5 @@
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
 def create_model(images, batch_size, n_classes):
     # conv1 layer

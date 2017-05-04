@@ -1,4 +1,4 @@
-#import tensorflow as tf
+import tensorflow as tf
 import random
 
 
@@ -43,7 +43,7 @@ class ToySequenceData(object):
 learning_rate = 0.01
 training_iters = 1000000
 batch_size = 128
-display_step = 10
+display_step = 100
 
 seq_max_len = 20
 n_hidden = 64
@@ -51,3 +51,71 @@ n_classes = 2
 
 trainset = ToySequenceData(n_samples=1000, max_seq_len=seq_max_len)
 testset = ToySequenceData(n_samples=500, max_seq_len=seq_max_len)
+
+x = tf.placeholder(tf.float32, [None, seq_max_len, 1])
+y = tf.placeholder(tf.float32, [None, n_classes])
+
+seqlen = tf.placeholder(tf.int32, [None])
+
+weights = {
+    "out": tf.Variable(tf.random_normal([n_hidden, n_classes]))
+}
+biases = {
+    "out": tf.Variable(tf.random_normal([n_classes]))
+}
+
+
+def dynamicRNN(x, seqlen, weights, biases):
+    x = tf.unstack(x, seq_max_len, 1)
+
+    lstm_cell = tf.contrib.rnn.BasicLSTMCell(n_hidden)
+
+    outputs, states = tf.contrib.rnn.static_rnn(
+        lstm_cell, x, dtype=tf.float32, sequence_length=seqlen)
+
+    outputs = tf.stack(outputs)
+    outputs = tf.transpose(outputs, [1, 0, 2])
+
+    batch_size = tf.shape(outputs)[0]
+    index = tf.range(0, batch_size) * seq_max_len + (seqlen - 1)
+    outputs = tf.gather(tf.reshape(outputs, [-1, n_hidden]), index)
+
+    return tf.matmul(outputs, weights["out"]) + biases["out"]
+
+pred = dynamicRNN(x, seqlen, weights, biases)
+
+cost = tf.reduce_mean(
+    tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
+
+optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
+
+correct_pred = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
+init = tf.global_variables_initializer()
+
+with tf.Session() as sess:
+    sess.run(init)
+    step = 1
+    while step * batch_size < training_iters:
+        batch_xs, batch_ys, batch_seqlen = trainset.next(batch_size)
+
+        sess.run(optimizer, feed_dict={
+                 x: batch_xs, y: batch_ys, seqlen: batch_seqlen})
+
+        if step % display_step == 0:
+            acc = sess.run(accuracy, feed_dict={
+                           x: batch_xs, y: batch_ys, seqlen: batch_seqlen})
+            loss = sess.run(cost,  feed_dict={
+                            x: batch_xs, y: batch_ys, seqlen: batch_seqlen})
+            print("Iter " + str(step * batch_size) + ", Minibatch Loss= " +
+                  "{:.6f}".format(loss) + ", Training Accuracy= " +
+                  "{:.5f}".format(acc))
+        step += 1
+    print("Optimization Finished!")
+
+    test_data = testset.data
+    test_label = testset.labels
+    test_seqlen = testset.seqlen
+    print("Testing Accuracy:", sess.run(accuracy, feed_dict={x: test_data, y: test_label,
+                                                              seqlen: test_seqlen}))
