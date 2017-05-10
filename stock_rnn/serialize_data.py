@@ -29,7 +29,7 @@ class SequenceStockData(object):
 
 if __name__ == '__main__':
 	data_list = get_data_list('test.csv')
-	train = SequenceStockData(data_list, 0, 100)
+	train = SequenceStockData(data_list, 0, 50)
 	batch1, label1 = train.next_batch(10)
 	batch2, label2 = train.next_batch(5)
 
